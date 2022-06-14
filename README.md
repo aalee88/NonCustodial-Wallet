@@ -1,4 +1,4 @@
-# NonCustodial-wallet
+# Non-Custodial Wallet
 A fully non custodial wallet created with Javascript and Ethers.
 
 
