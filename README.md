@@ -25,3 +25,4 @@ First update features
 - Support for account creation. (not secure in anyway whatsoever. yet)
 - Support for login.
 - Support for linking an wallet created to a signed in account.
+- Hence accessibility to multiple wallet being stored on one account and accessibility to all of them.
