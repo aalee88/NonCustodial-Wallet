@@ -16,3 +16,12 @@ For transactions:
 - It has a default transaction fee of 0.0000315 Ether.
 - Supports Ethereum and Polygon mainnets and other Ethereum test networks.
 - To change the network connected to, simply type in the name and click on change network.
+
+
+
+
+First update features
+
+- Support for account creation. (not secure in anyway whatsoever. yet)
+- Support for login.
+- Support for linking an wallet created to a signed in account.
