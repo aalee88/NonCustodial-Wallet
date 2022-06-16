@@ -26,3 +26,8 @@ First update features
 - Support for login.
 - Support for linking an wallet created to a signed in account.
 - Hence accessibility to multiple wallet being stored on one account and accessibility to all of them.
+
+
+Second update features
+
+-Supports json encryption for better security and makes it more non custodial for the user 
