@@ -165,7 +165,9 @@ const App = () => {
             
   
 
-      async function addAccount () {
+      async function addAccount (event) {
+
+        event.preventDefault();
         
           let i = 0;
 
@@ -176,7 +178,7 @@ const App = () => {
                 console.log ('No account logged in');
               } else if (wallet !== null) {
                 
-                const jsons = await wallet.encrypt(password);
+                const jsons = await wallet.encrypt(event.target.Password.value);
 
                 
 
@@ -184,7 +186,7 @@ const App = () => {
                 
                 accounts[currentId].account.push(jsons);
         
-                
+                //console.log(json)
                 console.log('Added');
               }
            
@@ -196,7 +198,7 @@ const App = () => {
               if (wallet === null) {
                 console.log ('No account logged in');
               } else if (wallet !== null) {
-                const jsons = await wallet.encrypt(password);
+                const jsons = await wallet.encrypt(event.target.Password.value);
 
                 
 
@@ -204,11 +206,11 @@ const App = () => {
                 
                 accounts[currentId].account.push(jsons);
         
+                //console.log(json)
                 console.log('Added');
               }
         }
       }
-
 
 
       
@@ -392,9 +394,14 @@ const App = () => {
       <p></p>
 
 
-       <button onClick= {addAccount} >Add Account </button>
+      <form onSubmit = {addAccount}>
+      <input placeholder= "Password" id="Password" type="text"/><p></p>
+        <p></p>
+      <button type={"submit"} >Add Account </button>
 
        <p></p>
+       </form>
+                
                 
 
       <button onClick={getAddress}> GET ADDRESS </button>
