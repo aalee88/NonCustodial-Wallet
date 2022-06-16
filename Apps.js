@@ -3,9 +3,11 @@ import React, {useState, useEffect} from 'react';
 import {ethers} from 'ethers';
 
 
+
+
 const App = () => {
 
-  let api = require('etherscan-api').init({ETHERSCAN_API},'kovan', '3000');
+  let api = require('etherscan-api').init({ETHERSCAN_APIKEY},'kovan', '3000');
 
   const [privateKey, setPrivateKey] = useState (null);
   const [balance, setBalance] = useState (null);
@@ -18,9 +20,14 @@ const App = () => {
   const [currentNetwork, setCurrentNetwork] = useState ('Ethereum Main Network');
   const [currentId, setCurrentId] = useState (null);
   const [accounts, setAccounts] = useState ([]);
-  const [provider, setProvider] = useState ()
+  const [json, setJson] = useState (null)
 
 
+  const provider = ethers.getDefaultProvider()
+
+
+
+  
 
 
 
@@ -82,13 +89,31 @@ const App = () => {
   }
 
 
-  function loadWallet (event) {
+  async function loadWallet (event) {
     event.preventDefault();
-        let x = accounts[currentId].account[event.target.walletId.value]
-        
-        setWalletMnemonic(x)
-        console.log(wallet)
+    let x = accounts[currentId].account[event.target.walletId.value]
 
+    console.log('Decrypting')
+    
+
+  
+
+       const result = await ethers.Wallet.fromEncryptedJson(x, event.target.Password.value);
+        
+
+        setWalletMnemonic(result)
+              const p = await walletMnemonic.connect(ethers.getDefaultProvider());
+              
+              setWallet(p);
+              console.log(wallet);
+              setCurrentNetwork ('Ethereum Mainnet Network')
+              console.log('Changing network to Ethereum Mainnet Network');
+
+              getAddress(event);
+              getPersonals(event);
+              
+
+        console.log(result)
   }
   
 
@@ -110,7 +135,7 @@ const App = () => {
         setWallet(p);
         console.log(wallet);
         setCurrentNetwork (x.charAt(0).toUpperCase() + x.slice(1) + ' Network')
-        console.log('Changing network to ' + currentNetwork);
+        console.log('Changing network to ' + x + ' Network');
         } catch {
             console.log ('No network with name, "' + x + '"');
         }
@@ -137,6 +162,9 @@ const App = () => {
 
 
 
+            
+  
+
       async function addAccount () {
         
           let i = 0;
@@ -147,7 +175,16 @@ const App = () => {
               if (wallet === null) {
                 console.log ('No account logged in');
               } else if (wallet !== null) {
-                accounts[currentId].account.push(wallet);
+                
+                const jsons = await wallet.encrypt(password);
+
+                
+
+                console.log(jsons)
+                
+                accounts[currentId].account.push(jsons);
+        
+                
                 console.log('Added');
               }
            
@@ -159,12 +196,19 @@ const App = () => {
               if (wallet === null) {
                 console.log ('No account logged in');
               } else if (wallet !== null) {
-                accounts[currentId].account.push(wallet);
+                const jsons = await wallet.encrypt(password);
 
+                
+
+                console.log(jsons)
+                
+                accounts[currentId].account.push(jsons);
+        
                 console.log('Added');
               }
         }
       }
+
 
 
       
@@ -263,15 +307,17 @@ const App = () => {
 
 
 
-      useEffect (() => {
+      useEffect ((event) => {
 
             if (wallet !== null) {
-            
             price();
             getBalance();
             }
             
       })
+
+
+
 
 
 
@@ -307,7 +353,7 @@ const App = () => {
       <form onSubmit = {open}>
       <input placeholder= "Mnmeonic" id="mnemonic" type="text"/><p></p>
         <p></p>
-                <button type={"submit"} > Open </button>
+                <button type={"submit"} > Import Wallet </button>
       </form>
        <p></p>
 
@@ -315,23 +361,27 @@ const App = () => {
 
 
 
-       <button onClick= {open1} > Open1 </button>
+       <button onClick= {open1} > Create Wallet </button>
 
        <p></p>
+
+       <button onClick= {provi} > Set Provider </button>
+
+<p></p>
 
 
        <form onSubmit = {loadWallet}>
       <input placeholder= "Wallet ID" id="walletId" type="number"/><p></p>
+        <p></p>
+        <input placeholder= "Password" id="Password" type="text"/><p></p>
         <p></p>
                 <button type={"submit"} > Load Wallet </button>
       </form>
        <p></p>
 
 
-
-       <button onClick= {provi} > Set Provider </button>
-
-       <p></p>
+       
+       
 
        <form onSubmit = {network}>
       <input placeholder= 'Network name' id="network" type="text"/><p></p>
