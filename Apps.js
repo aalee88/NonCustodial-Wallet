@@ -20,7 +20,7 @@ const App = () => {
   const [currentNetwork, setCurrentNetwork] = useState ('Ethereum Main Network');
   const [currentId, setCurrentId] = useState (null);
   const [accounts, setAccounts] = useState ([]);
-  const [json, setJson] = useState (null)
+
 
 
   const provider = ethers.getDefaultProvider()
@@ -28,9 +28,6 @@ const App = () => {
 
 
   
-
-
-
 
 
   function createAccount (event) {
@@ -55,8 +52,9 @@ const App = () => {
     if (currentId === null) {
     if (event.target.password.value === accounts[event.target.id.value].password) {
         setCurrentId(accounts[event.target.id.value].id);
-        console.log(currentId)
+
         console.log (accounts[event.target.id.value]);
+        console.log(currentId)
         
     } else {
       console.log ('Invalid details!');
@@ -102,10 +100,10 @@ const App = () => {
         
 
         setWalletMnemonic(result)
-              const p = await walletMnemonic.connect(ethers.getDefaultProvider());
+              const p = await result.connect(ethers.getDefaultProvider());
               
               setWallet(p);
-              console.log(wallet);
+              //console.log(wallet);
               setCurrentNetwork ('Ethereum Mainnet Network')
               console.log('Changing network to Ethereum Mainnet Network');
 
@@ -114,6 +112,7 @@ const App = () => {
               
 
         console.log(result)
+
   }
   
 
@@ -130,7 +129,8 @@ const App = () => {
   async function network (event) {
         event.preventDefault();
         const x = (event.target.network.value).toLowerCase();
-        try {const p = await walletMnemonic.connect(ethers.getDefaultProvider(x));
+        try {
+          const p = await walletMnemonic.connect(ethers.getDefaultProvider(x));
         
         setWallet(p);
         console.log(wallet);
@@ -162,8 +162,26 @@ const App = () => {
 
 
 
-            
-  
+      async function open2 (event) {
+        
+        event.preventDefault();
+        if (currentId !== null) {
+      // Create a wallet instance from a private key...
+          const priv = event.target.mnemonic.value;
+          const x = ethers.Wallet.fromMnemonic(mnemonic);
+          setWalletMnemonic (x);
+
+          
+
+          console.log(x);
+          } else {
+            console.log ('sign in first')
+        }
+      }
+
+
+
+      
 
       async function addAccount (event) {
 
@@ -186,7 +204,7 @@ const App = () => {
                 
                 accounts[currentId].account.push(jsons);
         
-                //console.log(json)
+                
                 console.log('Added');
               }
            
@@ -206,7 +224,7 @@ const App = () => {
                 
                 accounts[currentId].account.push(jsons);
         
-                //console.log(json)
+                
                 console.log('Added');
               }
         }
@@ -235,6 +253,7 @@ const App = () => {
         
         setWallet(p);
         setCurrentNetwork ('Ethereum Mainnet Network')
+        console.log(p)
         console.log(wallet);
         
       }
@@ -321,9 +340,6 @@ const App = () => {
 
 
 
-
-
-
   return (
     <div className="App">
 
@@ -393,7 +409,6 @@ const App = () => {
 
       <p></p>
 
-
       <form onSubmit = {addAccount}>
       <input placeholder= "Password" id="Password" type="text"/><p></p>
         <p></p>
@@ -401,7 +416,6 @@ const App = () => {
 
        <p></p>
        </form>
-                
                 
 
       <button onClick={getAddress}> GET ADDRESS </button>
