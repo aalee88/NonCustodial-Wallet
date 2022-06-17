@@ -5,9 +5,10 @@ import {ethers} from 'ethers';
 
 
 
+
 const App = () => {
 
-  let api = require('etherscan-api').init({ETHERSCAN_APIKEY},'kovan', '3000');
+  let api = require('etherscan-api').init({ETHERSCAN_API_KEY},'kovan', '3000');
 
   const [privateKey, setPrivateKey] = useState (null);
   const [balance, setBalance] = useState (null);
@@ -18,79 +19,22 @@ const App = () => {
   const [dbalance, setdbalance] = useState (null);
   const [d, setd] = useState (null);
   const [currentNetwork, setCurrentNetwork] = useState ('Ethereum Main Network');
-  const [currentId, setCurrentId] = useState (null);
-  const [accounts, setAccounts] = useState ([]);
-
+  const [qr, setQr] = useState (null);
+  const [tit, setTit] = useState (null);
 
 
   const provider = ethers.getDefaultProvider()
-
-
+  
 
   
 
 
-  function createAccount (event) {
-    event.preventDefault();
-    let x = {
-      email: event.target.email.value,
-      password: event.target.password.value,
-      id: accounts.length,
-      account: []
-    }
-    accounts.push(x);
-    
-
-    console.log (accounts);
-  }
-
-
-
-  function login (event) {
-    event.preventDefault();
-
-    if (currentId === null) {
-    if (event.target.password.value === accounts[event.target.id.value].password) {
-        setCurrentId(accounts[event.target.id.value].id);
-
-        console.log (accounts[event.target.id.value]);
-        console.log(currentId)
-        
-    } else {
-      console.log ('Invalid details!');
-    }
-  } else {
-    console.log ('logout first!')
-  } 
-  }
-
-
-
-  function logout (event) {
-    event.preventDefault();
-
-    if (currentId !== null) {
-    setCurrentId(null)
-    setAddress(null)
-    setWallet(null)
-    setMnemonic(null)
-    setPrivateKey(null)
-    setWalletMnemonic(null)
-    setdbalance(null)
-    setBalance(null)
-    setCurrentNetwork('Ethereum Main Network')
-    
-  } else {
-    console.log ('you are not logged in!')
-  }
-    
-  }
+      
 
 
   async function loadWallet (event) {
     event.preventDefault();
-    let x = accounts[currentId].account[event.target.walletId.value]
-
+          let x = localStorage.getItem('wallet-' + event.target.walletname.value);
     console.log('Decrypting')
     
 
@@ -105,6 +49,7 @@ const App = () => {
               setWallet(p);
               //console.log(wallet);
               setCurrentNetwork ('Ethereum Mainnet Network')
+              
               console.log('Changing network to Ethereum Mainnet Network');
 
               getAddress(event);
@@ -113,7 +58,40 @@ const App = () => {
 
         console.log(result)
 
+
   }
+
+
+
+
+  async function loadWallet1 (event) {
+    event.preventDefault();
+    console.log('Decrypting')
+    
+
+  
+
+       const result = await ethers.Wallet.fromEncryptedJson(event.target.json.value, event.target.Password.value);
+        
+
+        setWalletMnemonic(result)
+              const p = await result.connect(ethers.getDefaultProvider());
+              
+              setWallet(p);
+    
+              setCurrentNetwork ('Ethereum Mainnet Network')
+              console.log('Changing network to Ethereum Mainnet Network');
+
+              getAddress(event);
+              getPersonals(event);
+              
+
+        console.log(result)
+
+        
+
+  }
+  
   
 
   function price () {
@@ -146,8 +124,7 @@ const App = () => {
       async function open (event) {
         
         event.preventDefault();
-        if (currentId !== null) {
-      // Create a wallet instance from a mnemonic...
+      
           const mnemonic = event.target.mnemonic.value;
           const x = ethers.Wallet.fromMnemonic(mnemonic);
           setWalletMnemonic (x);
@@ -155,9 +132,7 @@ const App = () => {
           
 
           console.log(x);
-          } else {
-            console.log ('sign in first')
-        }
+         
       }
 
 
@@ -165,7 +140,7 @@ const App = () => {
       async function open2 (event) {
         
         event.preventDefault();
-        if (currentId !== null) {
+      
       // Create a wallet instance from a private key...
           const priv = event.target.mnemonic.value;
           const x = ethers.Wallet.fromMnemonic(mnemonic);
@@ -174,9 +149,7 @@ const App = () => {
           
 
           console.log(x);
-          } else {
-            console.log ('sign in first')
-        }
+        
       }
 
 
@@ -186,63 +159,32 @@ const App = () => {
       async function addAccount (event) {
 
         event.preventDefault();
-        
-          let i = 0;
 
-        if (accounts[currentId].account.length > 0 && accounts[currentId].account.includes(wallet) === false) { 
-          
 
-              if (wallet === null) {
-                console.log ('No account logged in');
-              } else if (wallet !== null) {
+                console.log('encrypting')
                 
                 const jsons = await wallet.encrypt(event.target.Password.value);
 
                 
 
                 console.log(jsons)
-                
-                accounts[currentId].account.push(jsons);
-        
-                
-                console.log('Added');
-              }
-           
 
-        } else if (accounts.length > 0 && accounts.includes(wallet) === true) { 
-                console.log ('Account already added');
-
-         } else if (accounts[currentId].account.length === 0) {
-              if (wallet === null) {
-                console.log ('No account logged in');
-              } else if (wallet !== null) {
-                const jsons = await wallet.encrypt(event.target.Password.value);
-
-                
-
-                console.log(jsons)
-                
-                accounts[currentId].account.push(jsons);
-        
-                
-                console.log('Added');
-              }
-        }
+                localStorage.setItem('wallet-' + event.target.walletname.value, jsons);
+                console.log('Saved to browser');
+            
       }
 
 
       
 
       async function open1 () {
-        if (currentId !== null) {
+       
     
         const x = await ethers.Wallet.createRandom();
         setWalletMnemonic (x);
         console.log(walletMnemonic);
         console.log(x);
-      } else {
-        console.log ('sign in first')
-      }
+     
         }
 
 
@@ -327,12 +269,22 @@ const App = () => {
       }
 
 
+      async function qrcode () {
+        let x = 'https://www.bitcoinqrcodemaker.com/api/?style=ethereum&address=' + address
+        setQr(x);
+        setTit ("ethereum:" + address)
+        console.log (qr)
+        console.log(tit)
+      }
+
+
 
       useEffect ((event) => {
 
             if (wallet !== null) {
             price();
             getBalance();
+            qrcode();
             }
             
       })
@@ -345,25 +297,7 @@ const App = () => {
 
         <h1>Wallet </h1>
 
-        <p> {currentId} </p>
-
-        <button onClick= {logout} > Log OUT </button>
-
-      <form onSubmit = {createAccount}>
-      <input placeholder= "email" id="email" type="text"/><p></p>
-        <p></p>
-        <input placeholder= "password" id="password" type="text"/><p></p>
-        
-                <button type={"submit"} > Create Account </button>
-      </form>
-       <p></p>
-
-       <form onSubmit = {login}>
-      <input placeholder= "ID" id="id" type="text"/><p></p>
-        <p></p>
-        <input placeholder= "password" id="password" type="text"/><p></p>
-                <button type={"submit"} > Login </button>
-      </form>
+       
        <p></p>
 
       
@@ -375,10 +309,6 @@ const App = () => {
       </form>
        <p></p>
 
-
-
-
-
        <button onClick= {open1} > Create Wallet </button>
 
        <p></p>
@@ -389,11 +319,24 @@ const App = () => {
 
 
        <form onSubmit = {loadWallet}>
-      <input placeholder= "Wallet ID" id="walletId" type="number"/><p></p>
+      
+        <input placeholder= "Wallet Name" id="walletname" type="text"/><p></p>
         <p></p>
         <input placeholder= "Password" id="Password" type="text"/><p></p>
         <p></p>
                 <button type={"submit"} > Load Wallet </button>
+      </form>
+       <p></p>
+
+
+
+       <form onSubmit = {loadWallet1}>
+      
+        <input placeholder= "JSON STRING" id="json" type="text"/><p></p>
+        <p></p>
+        <input placeholder= "Password" id="Password" type="text"/><p></p>
+        <p></p>
+                <button type={"submit"} > Load Wallet From JSON </button>
       </form>
        <p></p>
 
@@ -410,6 +353,8 @@ const App = () => {
       <p></p>
 
       <form onSubmit = {addAccount}>
+      <input placeholder= "Wallet Name" id="walletname" type="text"/><p></p>
+        <p></p>
       <input placeholder= "Password" id="Password" type="text"/><p></p>
         <p></p>
       <button type={"submit"} >Add Account </button>
@@ -421,6 +366,13 @@ const App = () => {
       <button onClick={getAddress}> GET ADDRESS </button>
       <p> Your Wallet Address: {address} </p>
 
+      <button onClick={qrcode}> GENERATE QR CODE </button> <p></p>
+      <a href="https://www.bitcoinqrcodemaker.com"><img src={qr} rel='nofollow'
+ height="300" width="300" border="0" alt="Ethereum QR code generator" title={tit} /></a>
+
+
+
+      
     <p></p>
       <button onClick={getPersonals}> GET Personals </button>
       <p> Your mnemonic phrase: <p></p>{mnemonic} </p>
@@ -447,3 +399,4 @@ const App = () => {
 }
 
 export default App;
+
