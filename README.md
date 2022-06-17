@@ -29,4 +29,10 @@ Further Updates
 
 
 
--Supports json encryption for better security and makes it more non custodial for the user
+- Supports json encryption for better security and makes it more non custodial for the user
+
+
+
+- Now supports QR Code creation for wallet addresses
+- Removed account creation, login and lopg out feature to make it more non-custodial
+- Support for wallet importation with JSON file string
