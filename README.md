@@ -20,7 +20,7 @@ For transactions:
 
 
 
-First update features
+Further Updates
 
 - Support for account creation. (not secure in anyway whatsoever. yet)
 - Support for login.
@@ -28,6 +28,5 @@ First update features
 - Hence accessibility to multiple wallet being stored on one account and accessibility to all of them.
 
 
-Second update features
 
--Supports json encryption for better security and makes it more non custodial for the user 
+-Supports json encryption for better security and makes it more non custodial for the user
