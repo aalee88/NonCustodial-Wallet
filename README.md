@@ -36,3 +36,9 @@ Further Updates
 - Now supports QR Code creation for wallet addresses
 - Removed account creation, login and lopg out feature to make it more non-custodial
 - Support for wallet importation with JSON file string
+
+
+
+
+- Truly self-custody EVM based wallet.
+- Better UI.
