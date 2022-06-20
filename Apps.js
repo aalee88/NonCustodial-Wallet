@@ -2,6 +2,8 @@ import './App.css';
 import React, {useState, useEffect} from 'react';
 import {ethers} from 'ethers';
 import QRCode from 'qrcode';
+import Select from 'react-select';
+
 
 
 
@@ -12,7 +14,7 @@ import QRCode from 'qrcode';
 
 const App = () => {
 
-  let api = require('etherscan-api').init({ETHERSCAN_APIKEY},'kovan', '3000');
+  let api = require('etherscan-api').init('5YFCBECG8AM4QZD3EHRY9ZEK3WWWEAKU15','kovan', '3000');
 
   const [privateKey, setPrivateKey] = useState (null);
   const [balance, setBalance] = useState (null);
@@ -34,10 +36,21 @@ const App = () => {
   const [addMessage, setAddMessage] = useState('');
   const [warn, setWarn] = useState('NOTE: IF YOU SAVED A WALLET WITH THE SAME NAME AS AN ALREADY EXISTING ONE ON YOUR BROWSER AND DEVICE, IT OVERWRITES THE CURRENT ONE ON YOUR BROWSER WITH THE NEW ONE SAVED BUT DOESNT DO SO FOR THE ONE ON YOUR DEVICE STORAGE. SO IF YOUR BROWSER JSON WALLET RECOVERY IS BRINGING UP A WRONG WALLET IT MIGHT HAVE BEEN OVERWRITTEN. SIMPLY FIND THE FILE IN YOUR DEVICE STORAGE AND RECOVER THE WALLET USING LOAD WITH JSON STRING INSTEAD')
   const [warn1, setWarn1] = useState('NOTE: IF YOU SAVED A WALLET WITH THE SAME NAME AS AN ALREADY EXISTING ONE ON YOUR BROWSER AND DEVICE, IT OVERWRITES THE CURRENT ONE ON YOUR BROWSER WITH THE NEW ONE SAVED BUT DOESNT DO SO FOR THE ONE ON YOUR DEVICE STORAGE. SO IF YOUR BROWSER JSON WALLET RECOVERY IS BRINGING UP A WRONG WALLET IT MIGHT HAVE BEEN OVERWRITTEN. SIMPLY FIND THE FILE IN YOUR DEVICE STORAGE AND RECOVER THE WALLET USING LOAD WITH JSON STRING INSTEAD')
+  const [fromPv, setFromPV] = useState (null); 
+  const [view, setView] = useState ('View Details'); 
+  const [history, setHistory] = useState ('#'); 
+  const [pv, setPv] = useState (''); 
 
+  
 
   const provider = ethers.getDefaultProvider()
- 
+  
+
+  
+
+
+      
+
 
   async function loadWallet (event) {
     event.preventDefault();
@@ -47,6 +60,9 @@ const App = () => {
     console.log('Decrypting')
     setBJsonMessage ('Decrypting...')
     
+
+  
+
        const result = await ethers.Wallet.fromEncryptedJson(x, event.target.Password.value);
         
 
@@ -54,19 +70,23 @@ const App = () => {
               const p = await result.connect(ethers.getDefaultProvider());
               
               setWallet(p);
-             
+              //console.log(wallet);
               setCurrentNetwork ('Ethereum Mainnet Network')
+              setFromPV(false);
               
               console.log('Changing network to Ethereum Mainnet Network');
 
-              getAddress(event);
-              getPersonals(event);
+              getAddress ();
+              setHistory('https://etherscan.io/address/' + address)
+              
               
 
         console.log(result)
-        setBJsonMessage ('Successfully Decrypted, Proceed to Wallet below')
+        setBJsonMessage ('Successfully Decrypted. Proceed to Wallet below')
         event.target.walletname.value = ''
         event.target.Password.value = ''
+        r.style.setProperty('--display', 'none');
+        r.style.setProperty('--displays', 'none');
     } catch(err) {
         setBJsonMessage (err.message)
     }
@@ -90,18 +110,22 @@ const App = () => {
               const p = await result.connect(ethers.getDefaultProvider());
               
               setWallet(p);
+              setFromPV(false);
     
               setCurrentNetwork ('Ethereum Mainnet Network')
               console.log('Changing network to Ethereum Mainnet Network');
 
-              getAddress(event);
-              getPersonals(event);
+              getAddress ();
+              setHistory('https://etherscan.io/address/' + address)
+              
               
 
         console.log(result)
         setJsonMessage('Successfully Decrypted, Proceed to Wallet below')
         event.target.json.value = ''
         event.target.Password.value = ''
+        r.style.setProperty('--display', 'none');
+    r.style.setProperty('--displays', 'none');
 
       } catch(err) {
         setJsonMessage (err.message)
@@ -117,8 +141,6 @@ const App = () => {
 
 
   
-
-  
   
 
   function price () {
@@ -131,21 +153,34 @@ const App = () => {
 }
 
 
-
-
-
   async function network (event) {
         event.preventDefault();
         const x = (event.target.network.value).toLowerCase();
         try {
+        if (x !== 'homestead' && x !== 'mainnet') {
+          
           const p = await walletMnemonic.connect(ethers.getDefaultProvider(x));
-        setNetworkMessage ('Changing network to ' + x + ' Network')
+        setNetworkMessage ('Changing network to ' + x.charAt(0).toUpperCase() + x.slice(1) + ' Network')
         
         setWallet(p);
         console.log(wallet);
         setCurrentNetwork (x.charAt(0).toUpperCase() + x.slice(1) + ' Network')
         console.log('Changing network to ' + x + ' Network');
         setNetworkMessage ('Successful!');
+        setHistory('https://' + x + '.etherscan.io/address/' + address)
+
+        } else {
+          
+          const p = await walletMnemonic.connect(ethers.getDefaultProvider());
+        setNetworkMessage ('Changing network to ' + x + ' Network')
+        
+        setWallet(p);
+        console.log(wallet);
+        setCurrentNetwork ('Ethereum Mainnet Network')
+        console.log('Changing network to Ethereum Mainnet Network');
+        setNetworkMessage ('Successful!');
+        setHistory('https://etherscan.io/address/' + address)
+        }
         event.target.network.value= ''
         } catch (err) {
             console.log (err.message);
@@ -163,14 +198,19 @@ const App = () => {
           const x = await ethers.Wallet.fromMnemonic(mnemonic);
             setWalletMnemonic (x);
             console.log(x);
+            setFromPV(false);
             setErrorMessage ( 'Successfully imported, click the "Provider" button above to set a provider and proceed' )
             event.target.mnemonic.value = ''
+            r.style.setProperty('--display', 'none');
+    r.style.setProperty('--displays', 'none');
           
         } catch(err) {
           console.error ('invalid mnemonic')
           setErrorMessage ( err.message)
 
         }
+          
+         
       }
 
 
@@ -178,13 +218,28 @@ const App = () => {
       async function open2 (event) {
         
         event.preventDefault();
+
+        try {
       
       // Create a wallet instance from a private key...
-          const priv = event.target.mnemonic.value;
-          const x = ethers.Wallet.fromMnemonic(mnemonic);
+          const priv = event.target.privatekey.value;
+          const x = new ethers.Wallet(priv, provider);
           setWalletMnemonic (x);
+          setWallet(x);
+          setFromPV(true);
+          
+          getAddress ();
+          setHistory('https://etherscan.io/address/' + address)
 
           console.log(x);
+          setPv('Successful! Proceed to the wallet below')
+          r.style.setProperty('--display', 'none');
+    r.style.setProperty('--displays', 'none');
+
+        } catch(err) {
+          console.log (err.message)
+          setPv(err.message)
+        }
         
       }
 
@@ -196,12 +251,18 @@ const App = () => {
 
         event.preventDefault();
         try {
-              console.log('encrypting')
+
+
+                console.log('encrypting')
                 setAddMessage ('Encrypting Wallet...')
                 
                 const jsons = await wallet.encrypt(event.target.Password.value);
                 
+
+                
+
                 console.log(jsons)
+                
 
                 localStorage.setItem('wallet-' + event.target.walletname.value, jsons);
                 setAddMessage ('Saved JSON Wallet to Browser')
@@ -237,11 +298,15 @@ const App = () => {
         try {
         const x = await ethers.Wallet.createRandom();
         setWalletMnemonic (x);
+        setFromPV(false);
+        
         console.log(walletMnemonic);
         console.log(x);
         setCreateMessage ('Wallet successfully created! Click on the provider button and proceed to your wallet below')
-        } catch {
-          setCreateMessage ('An error occured, try again')
+        r.style.setProperty('--display', 'none');
+    r.style.setProperty('--displays', 'none');
+        } catch(err){
+          setCreateMessage (err.message)
         }
      
         }
@@ -253,14 +318,16 @@ const App = () => {
 
       async function provi (event) {
 
+
         try {
         
-        const p = await walletMnemonic.connect(ethers.getDefaultProvider());
+        const p = await walletMnemonic.connect(provider);
         
         setWallet(p);
         setCurrentNetwork ('Ethereum Mainnet Network')
-        getAddress (event);
+        getAddress ();
         setProviderMessage ('Provider set! Proceed to wallet below')
+        
         console.log(p)
         console.log(wallet);
         } catch {
@@ -273,8 +340,8 @@ const App = () => {
 
 
 
-      async function getAddress (event) {
-        event.preventDefault();
+      async function getAddress () {
+        
           const x = await walletMnemonic.address;
           setAddress(x);
           console.log(x);
@@ -283,20 +350,43 @@ const App = () => {
 
       async function getPersonals (event) {
         event.preventDefault();
+          if (fromPv === false) {
           const x = await walletMnemonic.mnemonic;
           setMnemonic(x.phrase);
           setPrivateKey(await walletMnemonic.privateKey)
+          if (view === 'View Details') {
+            r.style.setProperty('--displayss', 'block');
+            setView ('Hide Details')
+          } else {
+            r.style.setProperty('--displayss', 'none');
+            setView ('View Details')
+          }
           console.log(x.phrase);
           console.log(await walletMnemonic.privateKey)
+
+          } else {
+          const x = await walletMnemonic.mnemonic;
+          setMnemonic(`"NO MNEMONIC DERIVED! {Note that a mnemonic phrase cannot be derived from wallets imported using a private key}"`);
+          setPrivateKey(await walletMnemonic.privateKey)
+          if (view === 'View Details') {
+            r.style.setProperty('--displayss', 'block');
+            setView ('Hide Details')
+          } else {
+            r.style.setProperty('--displayss', 'none');
+            setView ('View Details')
+          }
+          console.log(await walletMnemonic.privateKey)
+          }
       }
 
       
 
       async function getTx (event) {
             event.preventDefault();
-            
+            let b = window.confirm('You are about to send ' + event.target.amount.value + ' ETH to ' + event.target.recipient.value + ' Do you wish to proceed');
+            if (b === true) {
             try {
-            if (ethers.utils.isAddress(event.target.recipient.value) === true) {
+            if (ethers.utils.isAddress(event.target.recipient.value) == true) {
             const tx = {
               to: event.target.recipient.value,
               value: ethers.utils.parseEther(event.target.amount.value)
@@ -306,6 +396,7 @@ const App = () => {
             setTxMessage ('Pending Confirmation...');
             await x.wait();
             setTxMessage ('Successful!' + x);
+            alert('Your transaction of ' + event.target.amount.value + ' to ' + event.target.recipient.value + ' has been completed!')
             console.log ('Success');
             console.log (x)
             } else if ((event.target.recipient.value).slice(-4) === '.eth') {
@@ -314,11 +405,13 @@ const App = () => {
                   to: p,
                   value: ethers.utils.parseEther(event.target.amount.value)
                 }
+                setTxMessage ('Processing');
                 const x = await wallet.sendTransaction(tx)
-                setTxMessage ('Pending');
+                setTxMessage ('Pending Confirmation...');
                 await x.wait();
                 console.log ('Success');
                 setTxMessage ('Successful!' + x);
+                alert('Your transaction of ' + event.target.amount.value + ' to ' + event.target.recipient.value + ' has been completed!')
                 console.log (x)
             } else {
               console.log ('Invalid Address!');
@@ -329,13 +422,18 @@ const App = () => {
               console.log (err.message);
               setTxMessage (err.message);
             }
-          
+          } else {
+            alert ('This operation has been cancelled')
+          }
+
+          event.target.recipient.value = ''
+          event.target.amount.value = ''
       }
 
 
 
 
-      async function getBalance (event) {
+      async function getBalance () {
 
           let x = await wallet.getBalance();
           let a = balance * d;
@@ -374,9 +472,13 @@ const App = () => {
         setAddMessage('')
         setCreateMessage ('')
         setErrorMessage ('')
-        setWarn('')
         setBJsonMessage ('')
         setJsonMessage ('')
+        setPv('')
+      }
+
+      function close2 () {
+        setWarn('')
       }
 
       function close1 () {
@@ -394,9 +496,12 @@ const App = () => {
             price();
             getBalance();
             generateQrCode();
- 
+            getAddress ();
+            
             }
-  
+
+            
+            
             const timer3 = setTimeout(() =>  setProviderMessage (''), 10000);
             
             const timer6 = setTimeout(() =>  setNetworkMessage(''), 10000);
@@ -416,26 +521,34 @@ const App = () => {
   function show(event) {
     r.style.setProperty('--display', 'block');
     r.style.setProperty('--displays', 'none');
-    getAddress (event);
+    getAddress ();
+    setHistory('https://etherscan.io/address/' + address)
   }
 
   function shows(event) {
     r.style.setProperty('--display', 'none');
     r.style.setProperty('--displays', 'block');
-    getAddress (event);
+    getAddress ();
+    setHistory('https://etherscan.io/address/' + address)
   }
 
 
 
 
-
-      
-
-      
-
-    
   
 
+  
+  
+
+
+
+
+
+      
+
+      
+
+  
   
     
   
@@ -503,6 +616,22 @@ const App = () => {
       
        <p></p>
 
+
+
+       <h3> Import wallet using Private Keys</h3>
+
+      <form onSubmit = {open2}>
+      <input placeholder= "Private Keys" id="privatekey" type="text"/><p></p>
+        <p></p>
+               <button type={"submit"} > Import Wallet </button>
+      </form>
+      <h6> {pv} </h6>
+      {pv ? (   
+        <button className='button2' onClick={close}> Close </button>
+      ) : null}
+      
+       <p></p>
+
        
         
        <h3> Importing JSON Wallet from browser </h3>
@@ -510,10 +639,10 @@ const App = () => {
        <h5><p style={{color: 'red', marginTop:"1em"}}>{warn}</p></h5>
       <p></p>
       {warn ? (   
-      <button className='button2' onClick={close} style={{marginBottom:"3em"}}> Close </button>
+      <button className='button2' onClick={close2} style={{marginBottom:"3em"}}> Close </button>
       ) : null}
        <form onSubmit = {loadWallet}>
-        <input placeholder= "Wallet Name" id="walletname" type="text"/><p></p>
+        <input placeholder= "JSON Wallet Name" id="walletname" type="text"/><p></p>
         <p></p>
         <input placeholder= "Password" id="Password" type="text"/><p></p>
         <p></p>
@@ -542,6 +671,9 @@ const App = () => {
       ) : null}
 
 
+
+
+
        {wallet ? (   
         <div className='button'>
 
@@ -557,16 +689,20 @@ const App = () => {
 
 
 
-
+       
        <div className='wallet'>
+
 
         <h2> WALLET </h2>
         <h3> Current Network: {currentNetwork} </h3>
+        <h6> *Supported Main-Network Names: Mainnet, Matic. <br/> *Supported Test-Network Names: Kovan, Ropsten, Goerli, Rinkeby.</h6>
        <form onSubmit = {network}>
       <input placeholder= 'Network name' id="network" type="text"/><p></p>
         <p></p>
                 <button type={"submit"} > Change Network </button>
       </form>
+
+      
       <h5> {networkMessage} </h5>
       
       <h3></h3>
@@ -611,6 +747,16 @@ const App = () => {
         <button className='button2' onClick={close}> Close </button>
       ) : null}
 
+      <h3> TRANSACTION HISTORY </h3>
+      
+
+      <a href={history} target='_blank'>
+        <button> View history on etherscan </button>
+        </a>
+
+        <h6> *To view {address}'s tokens and balances on other chains/networks apart <br/> from {currentNetwork} switch over to that chain and click the button below.
+      <br/> It will redirect you to that chain's explorer/scan.</h6>
+
 
        </div>
 
@@ -618,6 +764,17 @@ const App = () => {
       </div>
 
 
+
+
+
+
+       
+
+      
+       
+                
+
+      
 
      
 
@@ -659,19 +816,27 @@ const App = () => {
 
        <div className='personal'>
 
-      <h3></h3>
+      <h3> Mnemonic Phrase and Private Key </h3>
     <p></p>
-      <button onClick={getPersonals}> Get Mnemonic and Private Key </button>
-      <p> Your mnemonic phrase: <p></p>{mnemonic} </p>
-      <p> Your Private Keys: <p></p>{privateKey} </p>
+      <button onClick={getPersonals}> {view} </button>
+      <div className='personals'>
+      <p> Your mnemonic phrase: <p></p> {mnemonic} </p>
+      
+      <p> Your Private Keys: <p></p> {privateKey} </p>
+      </div>
+
 
       </div>
 
        </div>
 
-     
+       <footer> © 2022 Michael Amadi</footer>
       
     </div>
+
+
+        
+
 
 
   );
