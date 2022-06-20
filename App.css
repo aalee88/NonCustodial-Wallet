@@ -1,6 +1,7 @@
 :root {
   --display: none;
   --displays: none;
+  --displayss: none;
 }
 
 .App {
@@ -12,7 +13,7 @@ button {
   background-color: cadetblue; /* Green */
   border: none;
   color: white;
-  padding: 12px 32px;
+  padding: 12px 24px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -30,8 +31,10 @@ button:hover {
 
 
 .Header {
-  padding-top: 1.5em;
-  padding-bottom: 1em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  background-color: rgb(4, 63, 63);
+  margin-bottom: 5em;
 }
 
 input {
@@ -40,7 +43,8 @@ input {
 }
 
 h1 {
-  color: darkslategrey;
+  color:aliceblue;
+
 }
 
 div {
@@ -57,6 +61,10 @@ select {
 
 .settings {
   display: var(--displays);
+}
+
+.personals {
+  display: var(--displayss);
 }
 
 
@@ -115,4 +123,18 @@ input {
 
 h5 {
   color:dimgrey;
+}
+
+h6 {
+  color:dimgrey;
+}
+
+footer {
+  padding-top: 1.5em;
+  padding-bottom: 1em;
+  margin-top: 5em;
+  
+  font-family:'Times New Roman', Times, serif;
+  color:aliceblue;
+  background-color:rgb(4, 63, 63);
 }
