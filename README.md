@@ -19,3 +19,5 @@ USAGE:
 - Supports json encryption for better security, saves the json file to both your browser and your device.
 - Now supports QR Code for wallet addresses
 - Button that redirects to an auto updating link to your address's etherscan page for both mainnet and testnets.
+- Added price conversion for MATIC token.
+- Added gas price, max fee and max priority fee for transaction on all networks including polygon and ethereum mainnet.
