@@ -2,11 +2,23 @@
 A fully non custodial wallet created with Javascript and Ethers.JS.
 
 
+
+WEBSITE: https://browserwallet.netlify.app
+
+NOTE: Still experimental! To try this out, use testnet Ether (Polygon Mumbai testnet not supported yet). To try this out on Mainnet, It is advisable to  make use of little amounts of Ether or Matic as the case may be.
+
+Suggestions are welcome!
+
+
+
+
+
 With this you can load your already existing wallet via its mnemonic phrase, private keys, encrypted JSON saved to your browser, JSON string or create a whole new wallet.
 
 After you do so, be sure to connect to the provider by calling the {provi} function.
 
 Your balance loads automatically and its dollar equivalent.
+
 
 
 
@@ -24,5 +36,3 @@ USAGE:
 - Added price conversion for MATIC token.
 - Added gas price, max fee and max priority fee for transaction on all networks including polygon and ethereum mainnet.
 
-
-DEMO: https://browserwallet.netlify.app
