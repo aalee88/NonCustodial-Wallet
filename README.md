@@ -21,3 +21,6 @@ USAGE:
 - Button that redirects to an auto updating link to your address's etherscan page for both mainnet and testnets.
 - Added price conversion for MATIC token.
 - Added gas price, max fee and max priority fee for transaction on all networks including polygon and ethereum mainnet.
+
+
+DEMO: https://browserwallet.netlify.app
