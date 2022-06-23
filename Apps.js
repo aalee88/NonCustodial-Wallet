@@ -15,7 +15,6 @@ import QRCode from 'qrcode';
 const App = () => {
 
   let api = require('etherscan-api').init({ETHERSCAN_APIKEY},'kovan', '3000');
-  //You can use cryptocompare for the price convertions too.
 
   const [privateKey, setPrivateKey] = useState (null);
   const [balance, setBalance] = useState (null);
@@ -42,14 +41,14 @@ const App = () => {
   const [history, setHistory] = useState ('#'); 
   const [pv, setPv] = useState (''); 
   const [symbol, setSymbol] = useState ('ETH'); 
-
+  const [scan, setScan] = useState ('EtherScan.io');
   
 
   const provider = ethers.getDefaultProvider()
   
   
   const cc = require('cryptocompare')
-  cc.setApiKey('{CRYPTOCOMPARE_APIKEYS}')
+  cc.setApiKey({CRYPTOCOMPARE_APIKEY})
 
       
 
@@ -182,6 +181,7 @@ const App = () => {
         console.log('Changing network to ' + x + ' Network');
         setNetworkMessage ('Successful!');
         setHistory('https://' + x + '.etherscan.io/address/' + address)
+        setScan ('EtherScan.io')
         setSymbol ('ETH')
 
         } else if (x === 'matic') {
@@ -195,7 +195,7 @@ const App = () => {
           setNetworkMessage ('Successful!');
           setHistory('https://polygonscan.com/address/' + address)
           setSymbol ('MATIC')
-
+          setScan('PolygonScan.com')
                 
 
         } else {
@@ -210,6 +210,7 @@ const App = () => {
         setNetworkMessage ('Successful!');
         setHistory('https://etherscan.io/address/' + address)
         setSymbol ('ETH')
+        setScan('EtherScan.io')
         }
         event.target.network.value= ''
         } catch (err) {
@@ -223,13 +224,15 @@ const App = () => {
       async function open (event) {
         
         event.preventDefault();
+        
           try {
           const mnemonic = event.target.mnemonic.value;
-          const x = await ethers.Wallet.fromMnemonic(mnemonic);
+          const x = await ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
+          setWallet(x);
             setWalletMnemonic (x);
             console.log(x);
             setFromPV(false);
-            setErrorMessage ( 'Successfully imported, click the "Provider" button above to set a provider and proceed' )
+            setErrorMessage ( 'Successfully imported, Proceed to your Wallet below' )
             event.target.mnemonic.value = ''
             r.style.setProperty('--display', 'none');
     r.style.setProperty('--displays', 'none');
@@ -324,15 +327,16 @@ const App = () => {
       
 
       async function open1 () {
-       
+        
         try {
-        const x = await ethers.Wallet.createRandom();
-        setWalletMnemonic (x);
+        const x = await ethers.Wallet.createRandom().connect(provider);
+        setWalletMnemonic(x);
+        setWallet (x);
         setFromPV(false);
         
         console.log(walletMnemonic);
         console.log(x);
-        setCreateMessage ('Wallet successfully created! Click on the provider button and proceed to your wallet below')
+        setCreateMessage ('Wallet successfully created! Proceed to your Wallet below')
         r.style.setProperty('--display', 'none');
     r.style.setProperty('--displays', 'none');
         } catch(err){
@@ -346,26 +350,7 @@ const App = () => {
         
 
 
-      async function provi (event) {
-
-
-        try {
-        
-        const p = await walletMnemonic.connect(provider);
-        
-        setWallet(p);
-        setCurrentNetwork ('Ethereum Mainnet Network')
-        getAddress ();
-        setProviderMessage ('Provider set! Proceed to wallet below')
-        
-        console.log(p)
-        console.log(wallet);
-        } catch {
-          setProviderMessage ('Error occured, kindly check your internet connection and create a new wallet or import an one with a mnemonic phrase to set a web3 provider for it.')
-        }
-        
-      }
-
+    
 
 
 
@@ -416,24 +401,42 @@ const App = () => {
 
             
             
-            
+            let response = await fetch('https://gasstation-mainnet.matic.network/v2')
+            let json = await response.json()
+
+
+
+            let feeData = await provider.getFeeData();
+                console.log(feeData)
+                let u = feeData.maxFee
+                let q = feeData.maxPriorityFee
+                let f = feeData.gasPrice
+                console.log(u)
+                console.log(q)
+                console.log(f)
 
             
 
-            let b = window.confirm('You are about to send ' + event.target.amount.value + ' ' + symbol + ' to ' + event.target.recipient.value + ' Do you wish to proceed');
-            if (b === true) {
+           
             try {
 
 
               if (currentNetwork === 'Polygon (Matic) Network') {
 
-                let response = await fetch('https://gasstation-mainnet.matic.network/v2')
-            let json = await response.json()
-            console.log(json)
+                
 
 
 
                 if (ethers.utils.isAddress(event.target.recipient.value) == true) {
+
+                  let b = window.confirm('You are about to send ' + event.target.amount.value + ' ' + symbol + ' to ' + event.target.recipient.value + '. The gas price for this transaction is ' + (ethers.utils.parseUnits(
+                    `${Math.ceil(json.fast.maxFee)}`,
+                    'gwei'
+                  )/1000000000) + ' Gwei, Do you wish to proceed?');
+                  if (b === true) {
+              console.log(json)
+
+
                   const tx = {
                     to: event.target.recipient.value,
                     value: ethers.utils.parseEther(event.target.amount.value),
@@ -456,7 +459,20 @@ const App = () => {
                   alert('Your transaction of ' + event.target.amount.value + ' ' + symbol + ' to ' + event.target.recipient.value + ' has been completed!')
                   console.log ('Success');
                   console.log (x)
-                  } else if ((event.target.recipient.value).slice(-4) === '.eth') {
+                } else {
+                  alert ('This operation has been cancelled')
+                }
+              } 
+                
+                else if ((event.target.recipient.value).slice(-4) === '.eth') {
+
+                    let b = window.confirm('You are about to send ' + event.target.amount.value + ' ' + symbol + ' to ' + event.target.recipient.value + '. The gas price for this transaction is ' + (ethers.utils.parseUnits(
+                      `${Math.ceil(json.fast.maxFee)}`,
+                      'gwei'
+                    )/1000000000) + ' Gwei, Do you wish to proceed?');
+                    if (b === true) {
+                console.log(json)
+
                       const p = provider.resolveName(event.target.recipient.value);
                       const tx = {
                         to: p,
@@ -478,7 +494,10 @@ const App = () => {
                       setTxMessage ('Successful!' + x);
                       alert('Your transaction of ' + event.target.amount.value + ' ' + symbol + ' to ' + event.target.recipient.value + ' has been completed!')
                       console.log (x)
-                  } else {
+                    } else {
+                      alert ('This operation has been cancelled')
+                    }
+                 } else {
                     console.log ('Invalid Address!');
                     setTxMessage ('Invalid Address');
                   }
@@ -487,18 +506,22 @@ const App = () => {
               } else {
 
 
-                let feeData = await provider.getFeeData();
-                console.log(feeData)
-                let u = feeData.maxFee
-                let q = feeData.maxPriorityFee
-                let f = feeData.gasPrice
-                console.log(u)
-                console.log(q)
-                console.log(f)
+                
 
+                
 
 
             if (ethers.utils.isAddress(event.target.recipient.value) == true) {
+
+
+              let b = window.confirm('You are about to send ' + event.target.amount.value + ' ' + symbol + ' to ' + event.target.recipient.value + '. This transaction will cost a gas price of ' + (ethers.utils.parseUnits(
+                `${Math.ceil(f)}`,
+                'gwei'
+              )/1000000000000000000) + ' Gwei, Do you wish to proceed?');
+              
+              if (b === true) {
+
+
             const tx = {
               to: event.target.recipient.value,
               value: ethers.utils.parseEther(event.target.amount.value),
@@ -517,7 +540,19 @@ const App = () => {
             alert('Your transaction of ' + event.target.amount.value + ' ' + symbol + ' to ' + event.target.recipient.value + ' has been completed!')
             console.log ('Success');
             console.log (x)
+          } else {
+            alert ('This operation has been cancelled')
+          }
+
             } else if ((event.target.recipient.value).slice(-4) === '.eth') {
+
+              let b = window.confirm('You are about to send ' + event.target.amount.value + ' ' + symbol + ' to ' + event.target.recipient.value + '. This transaction will cost a gas price of ' + (ethers.utils.parseUnits(
+                `${Math.ceil(f)}`,
+                'gwei'
+              )/1000000000000000000) + ' Gwei, Do you wish to proceed?');
+              
+              if (b === true) {
+
                 const p = provider.resolveName(event.target.recipient.value);
                 const tx = {
                   to: p,
@@ -535,7 +570,10 @@ const App = () => {
                 setTxMessage ('Successful!' + x);
                 alert('Your transaction of ' + event.target.amount.value + ' ' + symbol + ' to ' + event.target.recipient.value + ' has been completed!')
                 console.log (x)
-            } else {
+              } else {
+                alert ('This operation has been cancelled')
+              }
+             } else {
               console.log ('Invalid Address!');
               setTxMessage ('Invalid Address');
             }
@@ -545,9 +583,7 @@ const App = () => {
               console.log (err.message);
               setTxMessage (err.message);
             }
-          } else {
-            alert ('This operation has been cancelled')
-          }
+          
 
           event.target.recipient.value = ''
           event.target.amount.value = ''
@@ -660,6 +696,13 @@ const App = () => {
 
   
 
+
+
+
+
+  
+
+
   
   
 
@@ -681,7 +724,7 @@ const App = () => {
      
 
 //<h5 style={{backgroundColor: 'red', color: 'white'}}> Remember to backup your wallet. Go to the settings and either save your wallet as a JSON file or write down the mnemonic phrase or/and private keys before recieving money into it. </h5>
-//You can add this as a disclaimer.
+
       
 
 
@@ -712,14 +755,7 @@ const App = () => {
 
         
 
-       <p></p>
-
-       <h3 style={{marginTop:'2.5em'}}> Connect to a provider after creating a new wallet, importing via <br/>mnemonic phrase or importing via private keys to connect to the blockchain</h3>
-       <button onClick= {provi} > Connect to a Provider </button>
-       <h5> {providerMessage}</h5>
-
-<p></p>
-
+       
 
 <h3> OR </h3>
 
@@ -876,7 +912,7 @@ const App = () => {
       
 
       <a href={history} target='_blank'>
-        <button> View history on etherscan </button>
+        <button> View history on {scan} </button>
         </a>
 
         <h6> *To view {address}'s tokens and balances on other chains/networks apart <br/> from {currentNetwork} switch over to that chain and click the button below.
