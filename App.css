@@ -2,6 +2,7 @@
   --display: none;
   --displays: none;
   --displayss: none;
+  --list: none;
 }
 
 .App {
@@ -67,6 +68,9 @@ select {
   display: var(--displayss);
 }
 
+.list {
+  display: var(--list);
+}
 
 
 .button1 {
