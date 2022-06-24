@@ -42,6 +42,10 @@ const App = () => {
   const [pv, setPv] = useState (''); 
   const [symbol, setSymbol] = useState ('ETH'); 
   const [scan, setScan] = useState ('EtherScan.io');
+  const [listAccount, setListAccount] = useState ('View');
+  const [del, setDel] = useState (null);
+  const [c, setC] = useState (null);
+
   
 
   const provider = ethers.getDefaultProvider()
@@ -53,6 +57,11 @@ const App = () => {
       
 
       
+
+
+
+
+
 
 
   async function loadWallet (event) {
@@ -399,6 +408,8 @@ const App = () => {
       async function getTx (event) {
             event.preventDefault();
 
+            setTxMessage('Compiling transaction...')
+
             
             
             let response = await fetch('https://gasstation-mainnet.matic.network/v2')
@@ -634,6 +645,8 @@ const App = () => {
         setBJsonMessage ('')
         setJsonMessage ('')
         setPv('')
+        setDel('')
+        setC('')
       }
 
       function close2 () {
@@ -698,21 +711,99 @@ const App = () => {
 
 
 
+ const [th, setTh] = useState ([]);
+ const listItems = th.map((ths) => <li key={ths.name}>{ths.name}</li>);
+
+ 
 
 
-  
+  function listAccounts () {
+    
+    let x = []
+    for (let i = 0; i < localStorage.length; i++) {
+      let p = {}
+      p = {
+        name: localStorage.key(i).slice(7)
+      } 
+      x.push(p)
+    }
+
+    setTh (x)
 
 
-  
-  
+    console.log(th)
+
+    if (listAccount === 'View') {
+      setListAccount('Hide')
+      r.style.setProperty('--list', 'block');
+    } else {
+      setListAccount('View')
+      r.style.setProperty('--list', 'none');
+    }
 
 
+  }
 
 
-
+  function deleteWallet (event) {
+    event.preventDefault()
+    try {
+      listAccounts()
       
 
+    if (th.includes(event.target.wallet.value) === true) {
+      let x = window.confirm ('Are you sure you want to delete the wallet with ID "' + event.target.wallet.value + '"? THIS ACTION IS IRREVESIBLE ONCE CONFIRMED')
+    if (x === true) {
+      localStorage.removeItem('wallet-' + event.target.wallet.value)
+      setDel ('"' + event.target.wallet.value + '" wallet has been deleted!')
+      event.target.wallet.value = ''
+    } else {
+      setDel ('This action was cancelled')
+      event.target.wallet.value = ''
+    }
+  } else {
+    setDel ('Wallet named "' + event.target.wallet.value + '" not found.')
+  }
+  } catch (err) {
+    console.log(err.message)
+    setDel (err.message)
+  }
+  }
+
+
+
+
+  function clear (event) {
+    event.preventDefault()
+    try {
+      listAccounts()
       
+
+    if (th.length !== 0) {
+      let x = window.confirm ('Are you sure you want to CLEAR ALL WALLETS SAVED TO THIS BROWSER? THIS ACTION IS IRREVESIBLE ONCE CONFIRMED')
+    if (x === true) {
+      localStorage.clear()
+      setC ('All wallets linked to this Browser has been deleted.')
+    } else {
+      setC ('This action was cancelled')
+    }
+  } else {
+    setC ('No wallet is saved to this browser.')
+  }
+  } catch (err) {
+    console.log(err.message)
+    setC (err.message)
+  }
+  }
+
+
+
+  
+
+
+  
+  
+ 
 
   
   
@@ -736,10 +827,10 @@ const App = () => {
       <div className='Header'>
         
         <h1>BROWSER WALLET</h1>
-        </div>
+        </div> 
         
-       
-       
+      
+     
 
 
       <div className='onboard'>
@@ -802,8 +893,19 @@ const App = () => {
       {warn ? (   
       <button className='button2' onClick={close2} style={{marginBottom:"3em"}}> Close </button>
       ) : null}
+
+      <p></p>
+
+        
+      <button onClick={listAccounts}> {listAccount} all saved wallets </button>
+      <p></p>
+       <li className='list' style={{marginBottom:'3em'}}> {listItems} </li>  
+       
+
+
+
        <form onSubmit = {loadWallet}>
-        <input placeholder= "JSON Wallet Name" id="walletname" type="text"/><p></p>
+        <input style={{marginTop:'1.5em'}} placeholder= "JSON Wallet Name" id="walletname" type="text"/><p></p>
         <p></p>
         <input placeholder= "Password" id="Password" type="text"/><p></p>
         <p></p>
@@ -901,6 +1003,7 @@ const App = () => {
       <input placeholder= "Address or ENS ('.eth') name" id="recipient" type="text"/><p></p>
       <input placeholder= "Amount" id="amount" type="text"/><p></p>
         <p></p>
+       
                 <button type={"submit"} > Send  </button>
       </form>
       <h5> {txMessage}</h5>
@@ -946,7 +1049,7 @@ const App = () => {
         <h2>SETTINGS</h2>
        
 
-       
+       <div className='encrypt'> 
         <h3> ENCRYPT WALLET AS JSON </h3>
         <h5> This encrypts your wallet as a JSON file with a password of your choice, 
           <br/> stores it on your browser as the 'Wallet-Name' you chose and downloads the file <br/> 
@@ -972,6 +1075,8 @@ const App = () => {
       {addMessage ? (   
         <button className='button2' onClick={close}> Close </button>
       ) : null}
+      </div>
+
 
 
 
@@ -985,6 +1090,38 @@ const App = () => {
       
       <p> Your Private Keys: <p></p> {privateKey} </p>
       </div>
+
+
+
+        <h2 style={{marginTop:"7.5em"}}> DATA MANAGEMENT </h2>
+      <div className='delete'>
+
+          <h5> Input the name of the wallet you wish to delete from your browser's storage.</h5>
+
+        <form onSubmit = {deleteWallet}>
+        <input placeholder= "Wallet Name" id="wallet" type="text"/><p></p>
+          <p></p>
+        <button type={"submit"} > Delete Wallet Permanently. </button>
+
+        <p> {del} </p>
+
+        {del ? (   
+        <button className='button2' onClick={close}> Close </button>
+        ) : null}
+        </form>
+
+        <h3> CLEAR ALL ACCOUNT DATA OF BROWSER WALLET FROM YOUR BROWSER </h3>
+        <h6> This action is irreversible. </h6>
+        <p> <button onClick={clear}> CLEAR ALL DATA </button></p>
+        <p> {c} </p>
+        {c ? (   
+        <button className='button2' onClick={close}> Close </button>
+        ) : null}
+        </div>
+
+
+
+
 
 
       </div>
