@@ -711,7 +711,11 @@ const App = () => {
 
 
 
+ 
+
+
  const [th, setTh] = useState ([]);
+ const [ti, setTi] = useState ([]);
  const listItems = th.map((ths) => <li key={ths.name}>{ths.name}</li>);
 
  
@@ -720,15 +724,20 @@ const App = () => {
   function listAccounts () {
     
     let x = []
+    let u = []
     for (let i = 0; i < localStorage.length; i++) {
+      u.push(localStorage.key(i).slice(7))
       let p = {}
+
       p = {
         name: localStorage.key(i).slice(7)
       } 
+      
       x.push(p)
     }
 
     setTh (x)
+    setTi (u)
 
 
     console.log(th)
@@ -751,7 +760,7 @@ const App = () => {
       listAccounts()
       
 
-    if (th.includes(event.target.wallet.value) === true) {
+    if (ti.includes(event.target.wallet.value) === true) {
       let x = window.confirm ('Are you sure you want to delete the wallet with ID "' + event.target.wallet.value + '"? THIS ACTION IS IRREVESIBLE ONCE CONFIRMED')
     if (x === true) {
       localStorage.removeItem('wallet-' + event.target.wallet.value)
