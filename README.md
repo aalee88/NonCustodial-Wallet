@@ -36,4 +36,7 @@ USAGE:
 - Added price conversion for MATIC token.
 - Added gas price, max fee and max priority fee for transaction on all networks including polygon and ethereum mainnet.
 - Gas price shown to user in Gwei to confirm before transaction is authorized.
+- Ability to view list of JSON wallets' name saved to your browser's local storage.
+- Ability to delete a particular JSON wallet saved to your browser's local storage.
+- Ability to clear all JSON wallets saved to your browser's local storage.
 
