@@ -781,7 +781,7 @@ const App = () => {
       r.style.setProperty("--display", "none");
       r.style.setProperty("--displays", "none");
     } catch (err) {
-      setJsonMessage(err.message);
+      setFileMessage(err.message);
     }
   }
 
