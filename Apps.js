@@ -2,10 +2,11 @@ import "./App.css";
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import QRCode from "qrcode";
+import { contractAddress, abi } from "./constants";
 
 const App = () => {
   let api = require("etherscan-api").init(
-    {ETHERSCAN_APIKEY},
+    {ETHERSCAN_API_KEY},
     "kovan",
     "3000"
   );
@@ -25,6 +26,7 @@ const App = () => {
   const [providerMessage, setProviderMessage] = useState("");
   const [bjsonMessage, setBJsonMessage] = useState("");
   const [jsonMessage, setJsonMessage] = useState("");
+  const [fileMessage, setFileMessage] = useState("");
   const [networkMessage, setNetworkMessage] = useState("");
   const [txMessage, setTxMessage] = useState("");
   const [addMessage, setAddMessage] = useState("");
@@ -43,12 +45,13 @@ const App = () => {
   const [listAccount, setListAccount] = useState("View");
   const [del, setDel] = useState(null);
   const [c, setC] = useState(null);
+  const [copyButton, setCopyButton] = useState("Copy Address");
 
   const provider = ethers.getDefaultProvider();
 
   const cc = require("cryptocompare");
   cc.setApiKey(
-    {CRYPTO_COMPARE_APIKEY}
+    {CRYPTOCOMPARE_API_KEY}
   );
 
   async function loadWallet(event) {
@@ -366,8 +369,10 @@ const App = () => {
           let b = window.confirm(
             "You are about to send " +
               event.target.amount.value +
-              " " +
               symbol +
+              "/$" +
+              event.target.amount.value * d +
+              " " +
               " to " +
               event.target.recipient.value +
               ". This transaction will cost a fee of " +
@@ -416,8 +421,10 @@ const App = () => {
           let b = window.confirm(
             "You are about to send " +
               event.target.amount.value +
-              " " +
               symbol +
+              "/$" +
+              event.target.amount.value * d +
+              " " +
               " to " +
               event.target.recipient.value +
               ". The gas price for this transaction is " +
@@ -472,8 +479,10 @@ const App = () => {
           let b = window.confirm(
             "You are about to send " +
               event.target.amount.value +
-              " " +
               symbol +
+              "/$" +
+              event.target.amount.value * d +
+              " " +
               " to " +
               event.target.recipient.value +
               ". This transaction will cost a fee of " +
@@ -515,8 +524,10 @@ const App = () => {
           let b = window.confirm(
             "You are about to send " +
               event.target.amount.value +
-              " " +
               symbol +
+              "/$" +
+              event.target.amount.value * d +
+              " " +
               " to " +
               event.target.recipient.value +
               ". This transaction will cost a fee of " +
@@ -600,6 +611,7 @@ const App = () => {
     setPv("");
     setDel("");
     setC("");
+    setFileMessage("");
   }
 
   function close2() {
@@ -725,6 +737,56 @@ const App = () => {
     }
   }
 
+  const [jsonText, setJsonText] = useState(null);
+
+  const showFile = (e) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      console.log(e.target.result);
+      setJsonText(e.target.result);
+      console.log(jsonText);
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+
+  async function jsonFileWallet(event) {
+    event.preventDefault();
+
+    try {
+      console.log("Decrypting");
+      setFileMessage("Decrypting JSON file...");
+
+      const result = await ethers.Wallet.fromEncryptedJson(
+        jsonText,
+        event.target.Password.value
+      );
+
+      setWalletMnemonic(result);
+      const p = await result.connect(ethers.getDefaultProvider());
+
+      setWallet(p);
+      setFromPV(false);
+
+      setCurrentNetwork("Ethereum Mainnet Network");
+      console.log("Changing network to Ethereum Mainnet Network");
+
+      getAddress();
+      setHistory("https://etherscan.io/address/" + address);
+
+      console.log(result);
+      setFileMessage("Successfully Decrypted, Proceed to Wallet below");
+      event.target.json.value = "";
+      event.target.Password.value = "";
+      r.style.setProperty("--display", "none");
+      r.style.setProperty("--displays", "none");
+    } catch (err) {
+      setJsonMessage(err.message);
+    }
+  }
+
+  
+
   //<h5 style={{backgroundColor: 'red', color: 'white'}}> Remember to backup your wallet. Go to the settings and either save your wallet as a JSON file or write down the mnemonic phrase or/and private keys before recieving money into it. </h5>
 
   return (
@@ -844,6 +906,35 @@ const App = () => {
           </button>
         ) : null}
 
+        <h3> Importing wallet with JSON FILE and Password </h3>
+        <form onSubmit={jsonFileWallet}>
+          <input
+            onChange={showFile}
+            placeholder="JSON STRING"
+            id="json"
+            type="file"
+          />
+          <p></p>
+          <p></p>
+          <input placeholder="Password" id="Password" type="text" />
+          <p></p>
+          <p></p>
+          <button type={"submit"}> Load Wallet From JSON FILE</button>
+        </form>
+        <p>
+          <h5> {fileMessage}</h5>
+        </p>
+        {fileMessage ? (
+          <button
+            className="button2"
+            onClick={close}
+            style={{ marginBottom: "3em" }}
+          >
+            {" "}
+            Close{" "}
+          </button>
+        ) : null}
+
         <h3> Importing wallet with JSON STRING and Password </h3>
         <form onSubmit={loadWallet1}>
           <input placeholder="JSON STRING" id="json" type="text" />
@@ -896,25 +987,42 @@ const App = () => {
           <p></p>
           <button type={"submit"}> Change Network </button>
         </form>
-
         <h5> {networkMessage} </h5>
-
         <h3></h3>
         <button onClick={getAddress}> GET ADDRESS </button>
         <p></p>
-        <h3 style={{ marginTop: "0em" }}> Wallet Address: {address} </h3>
-
+        <h3 id="userAddress" style={{ marginTop: "0em" }}>
+          {" "}
+          Wallet Address: <p> </p>
+          {address}{" "}
+        </h3>{" "}
+        <p></p>
+        <button
+          onClick={() => {
+            getAddress();
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(address);
+              setCopyButton("Copied to clipboard");
+              const copyTimer = setTimeout(
+                () => setCopyButton("Copy Address"),
+                7000
+              );
+            } else {
+              alert("Your browser does not support this feature");
+            }
+          }}
+        >
+          {copyButton}
+        </button>{" "}
+        <p></p>
         {imageUrl ? <img src={imageUrl} alt="img" /> : null}
-
         <br />
-
         {imageUrl ? (
           <a href={imageUrl} download>
             {" "}
             <button> Download QR CODE </button>{" "}
           </a>
         ) : null}
-
         <p></p>
         <h3 style={{ marginTop: "3em" }}> WALLET BALANCE</h3>
         <button onClick={getBalance}>Refresh </button>
@@ -924,7 +1032,6 @@ const App = () => {
           {balance} {symbol}
         </h3>
         <h6 style={{ marginBottom: "4em" }}>${dbalance}</h6>
-
         <div className="transaction">
           <h2> TRANSACTION </h2>
 
@@ -935,6 +1042,7 @@ const App = () => {
               id="recipient"
               type="text"
             />
+
             <p></p>
             <input placeholder="Amount" id="amount" type="text" />
             <p></p>
@@ -942,6 +1050,7 @@ const App = () => {
 
             <button type={"submit"}> Send </button>
           </form>
+
           <h5> {txMessage}</h5>
           {txMessage ? (
             <button className="button2" onClick={close}>
