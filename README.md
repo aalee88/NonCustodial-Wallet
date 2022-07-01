@@ -13,7 +13,7 @@ Suggestions are welcome!
 
 
 
-With this you can load your already existing wallet via its mnemonic phrase, private keys, encrypted JSON saved to your browser, JSON string or create a whole new wallet.
+With this you can load your already existing wallet via its mnemonic phrase, private keys, encrypted JSON saved to your browser, JSON string, JSON file or create a whole new wallet.
 
 After you do so, be sure to connect to the provider by calling the {provi} function.
 
@@ -39,4 +39,6 @@ USAGE:
 - Ability to view list of JSON wallets' name saved to your browser's local storage.
 - Ability to delete a particular JSON wallet saved to your browser's local storage.
 - Ability to clear all JSON wallets saved to your browser's local storage.
+- Added a comprehensive transaction cost conversion rate in Ether and dollar for the amount to be sent and gas fees for the user to see before proceeding     to confirm a transaction.
+- Added support for the user to copy his address to his clipboard in one click.
 
